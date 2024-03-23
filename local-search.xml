@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>单独部署Alist前端以优化体验</title>
+    <link href="/2024/02/25/%E5%8D%95%E7%8B%AC%E9%83%A8%E7%BD%B2Alist%E5%89%8D%E7%AB%AF%E4%BB%A5%E4%BC%98%E5%8C%96%E4%BD%93%E9%AA%8C/"/>
+    <url>/2024/02/25/%E5%8D%95%E7%8B%AC%E9%83%A8%E7%BD%B2Alist%E5%89%8D%E7%AB%AF%E4%BB%A5%E4%BC%98%E5%8C%96%E4%BD%93%E9%AA%8C/</url>
+    
+    <content type="html"><![CDATA[<p>这几天折腾了下部署 Alist 在服务器上，但是因为套了 Cloudflare 感觉有点慢，于是决定单独部署 Alist 前端在 Cloudflare Pages 上。</p><span id="more"></span><h1 id="0-准备"><a href="#0-准备" class="headerlink" title="0. 准备"></a>0. 准备</h1><ul><li>Github 账号</li><li>Cloudflare &#x2F; Vercel 或其他部署平台的账号</li></ul><h1 id="1-部署-Alist"><a href="#1-部署-Alist" class="headerlink" title="1. 部署 Alist"></a>1. 部署 Alist</h1><p>参考 <a href="https://alist.nn.ci/zh/guide/install/">Alist</a> 的安装文档正常安装。</p><p>部署时注意以下几点：</p><ul><li><code>config.json</code>中<code>site_url</code>的值为空值或是你计划部署的域名</li><li>部署 SSL 证书（通过官方文档 &#x2F; 反向代理 &#x2F; Cloudflare Tunnel 均可）</li></ul><h1 id="2-修改配置文件"><a href="#2-修改配置文件" class="headerlink" title="2. 修改配置文件"></a>2. 修改配置文件</h1><p>首先，Fork <a href="https://github.com/alist-org/alist-web">alist-web</a> 这个仓库到自己的账户下。</p><h2 id="配置-API"><a href="#配置-API" class="headerlink" title="配置 API"></a>配置 API</h2><p>修改 <code>.env.production</code> 里的域名为自己的域名（即已经部署好的 Alist 访问域名）</p><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-section">\\Example: </span><br><br>VITE_API_URL = <span class="hljs-string">&quot;https://alist.xxx.com/&quot;</span><br></code></pre></td></tr></table></figure><h2 id="添加中文（简体）"><a href="#添加中文（简体）" class="headerlink" title="添加中文（简体）"></a>添加中文（简体）</h2><p>默认情况下，仓库里是没有简体中文的语言文件的，所以需要手动下载。</p><p>在官方的 <a href="https://crowdin.com/project/alist/zh-CN">Crowdin</a> 界面打包下载中文包，并且放入仓库里</p><p><img src="https://raw.githubusercontent.com/bingxin666/blog-cloud/main/%7B947CA9EB-B3E9-4052-B204-86BCB1D7B4AD%7D.png" alt="这里下载w（看不到照片尝试魔法）"></p><p>同时修改 <code>.gitigonre</code> 文件防止我们的语言文件被排除</p><p>在仓库根目录分别执行 <code>npm i</code> 和 <code>node .\scripts\i18n.mjs</code> 生成中文对应的 i18n 需要的文件</p><h1 id="3-部署前端"><a href="#3-部署前端" class="headerlink" title="3. 部署前端"></a>3. 部署前端</h1><p>这里以 Cloudflare Pages 为例</p><p>只需要连接到你 Fork 的仓库，填写以下内容</p><figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs 1c">构建命令：pnpm install <span class="hljs-meta">&amp;&amp; pnpm build</span><br>构建输出目录：/dist<br></code></pre></td></tr></table></figure><p>稍等一会儿，就部署完成了！</p><h1 id="4-尾声"><a href="#4-尾声" class="headerlink" title="4. 尾声"></a>4. 尾声</h1><p>说实话部署还是有点难度的（特别是没有任何参考文档的情况下）</p><p>总之，玩的开心！</p><p>也可以来我已经部署完的站点看看！<a href="https://share.baka.ac.cn/">点我前往</a>！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>实践</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Github</tag>
+      
+      <tag>Alist</tag>
+      
+      <tag>Cloudflare</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>基于Giscus和Github搭建一个评论区</title>
+    <link href="/2024/02/03/%E5%9F%BA%E4%BA%8EGiscus%E5%92%8CGithub%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%AF%84%E8%AE%BA%E5%8C%BA/"/>
+    <url>/2024/02/03/%E5%9F%BA%E4%BA%8EGiscus%E5%92%8CGithub%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%AF%84%E8%AE%BA%E5%8C%BA/</url>
+    
+    <content type="html"><![CDATA[<p>最近了解到了Giscus，相较于Gitalk更加容易配置<br>因此有了这篇教程</p><span id="more"></span><hr><h1 id="0-你需要准备的"><a href="#0-你需要准备的" class="headerlink" title="0.你需要准备的"></a>0.你需要准备的</h1><p>一个Github账号</p><h1 id="1-准备工作"><a href="#1-准备工作" class="headerlink" title="1.准备工作"></a>1.准备工作</h1><p>首先，您需要选择一个公共Github存储库（已存在或创建一个新的Github存储库）用于存储评论。<br>根据 giscus.app 的要求，需要对该仓库做以下配置</p><ul><li>该仓库是公开的，否则访客将无法查看 discussion。</li><li><a href="https://github.com/apps/giscus">giscus app</a> 已安装，否则访客将无法评论和回应。</li><li>Discussions 功能已<a href="https://docs.github.com/en/github/administering-a-repository/managing-repository-settings/enabling-or-disabling-github-discussions-for-a-repository">在你的仓库中启用</a>。</li></ul><h1 id="2-部署评论区"><a href="#2-部署评论区" class="headerlink" title="2.部署评论区"></a>2.部署评论区</h1><p>我的博客是基于hexo搭建的，所以只给出hexo下Giscus的部署方法</p><p>首先，打开<a href="https://giscus.app/zh-CN">Giscus</a>，按照要求填写配置，在下方会出现<code>启用 giscus</code></p><p>其次，转到<code>_config.yml</code>，找到部署Gitalk的地方，需要填写的内容可能如下可能如下（不同主题可能存在差异）</p><p>选择Giscus作为评论实现方法：</p><figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs coq"># 评论插件<br># Comment plugin<br>comments:<br>  enable: true<br>  # 指定的插件，需要同时设置对应插件的必要参数<br>  # The specified plugin needs to <span class="hljs-built_in">set</span> the necessary parameters <span class="hljs-built_in">at</span> the same <span class="hljs-built_in">time</span><br>  # <span class="hljs-keyword">Options</span>: utterances | <span class="hljs-type">disqus</span> | <span class="hljs-type">gitalk</span> | <span class="hljs-type">valine</span> | <span class="hljs-type">waline</span> | <span class="hljs-type">changyan</span> | <span class="hljs-type">livere</span> | <span class="hljs-type">remark42</span> | <span class="hljs-type">twikoo</span> | <span class="hljs-type">cusdis</span> | <span class="hljs-type">giscus</span><br>  type: giscus<br></code></pre></td></tr></table></figure><p>配置Giscus：</p><figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs haskell"><span class="hljs-meta"># Giscus</span><br><span class="hljs-meta"># 基于 GitHub Discussions，类似于 Utterances</span><br><span class="hljs-meta"># Based on GitHub Discussions, similar to Utterances</span><br><span class="hljs-meta"># See: https://giscus.app/</span><br><span class="hljs-title">giscus</span>:<br>  repo: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-repo&gt;</span><br>  repo-id: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-repo-id&gt;</span><br>  category: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-category&gt;</span><br>  category-id: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-category-id&gt;</span><br>  theme-light: light<br>  theme-dark: dark<br>  mapping: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-mapping&gt;</span><br>  reactions-enabled: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-reactions-enabled&gt;</span><br>  emit-metadata: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-emit-metadata&gt;</span><br>  input-position: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-input-position&gt;</span><br>  lang: &lt;对应 <span class="hljs-class"><span class="hljs-keyword">data</span>-lang&gt;</span><br></code></pre></td></tr></table></figure><p>向其中填入信息后，再次部署你的hexo，看看效果吧！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>实践</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Blog</tag>
+      
+      <tag>Github</tag>
+      
+      <tag>Giscus</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>博客现已支持RSS订阅</title>
+    <link href="/2024/01/27/%E5%8D%9A%E5%AE%A2%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81RSS%E8%AE%A2%E9%98%85/"/>
+    <url>/2024/01/27/%E5%8D%9A%E5%AE%A2%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81RSS%E8%AE%A2%E9%98%85/</url>
+    
+    <content type="html"><![CDATA[<p>博客现已支持RSS订阅</p><span id="more"></span><p>使用以下链接</p><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">https:<span class="hljs-regexp">//</span>blog.byteloid.one/atom.xml<br></code></pre></td></tr></table></figure><p>订阅咱们的博客！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Blog</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>未成年申请中信银行Visa和MasterCard借记卡</title>
+    <link href="/2024/01/19/%E6%9C%AA%E6%88%90%E5%B9%B4%E7%94%B3%E8%AF%B7%E4%B8%AD%E4%BF%A1%E9%93%B6%E8%A1%8CVisa%E5%92%8CMasterCard%E5%80%9F%E8%AE%B0%E5%8D%A1/"/>
+    <url>/2024/01/19/%E6%9C%AA%E6%88%90%E5%B9%B4%E7%94%B3%E8%AF%B7%E4%B8%AD%E4%BF%A1%E9%93%B6%E8%A1%8CVisa%E5%92%8CMasterCard%E5%80%9F%E8%AE%B0%E5%8D%A1/</url>
+    
+    <content type="html"><![CDATA[<p>好久不见！<br>考试前我通过朋友了解到中信银行有Visa和MasterCard的借记卡，于是便尝试申请。<br>刚好考试也结束了，那就正好去激活一下卡片</p><span id="more"></span><hr><h1 id="0-申请中信银行Visa和MasterCard借记卡"><a href="#0-申请中信银行Visa和MasterCard借记卡" class="headerlink" title="0.申请中信银行Visa和MasterCard借记卡"></a>0.申请中信银行Visa和MasterCard借记卡</h1><h2 id="MasterCard借记卡"><a href="#MasterCard借记卡" class="headerlink" title="MasterCard借记卡"></a>MasterCard借记卡</h2><p>在<a href="https://j6j6.top/">这个网站</a>可以看到由热心网友收集的办理链接<br>如果找不到&#x2F;无法访问也可以<a href="https://wap.bank.ecitic.com/NMBFOServer/MobileBankWeb/?index=DebitCard.ApplyDebitCard.Index&ACCNOID=0000000001&CHANLNO=WBWS01&cardType=7018477217091026945326a3931613247567441&CHANLLOGO=">点击这里</a>去申请</p><h2 id="Visa借记卡"><a href="#Visa借记卡" class="headerlink" title="Visa借记卡"></a>Visa借记卡</h2><p>下载中信银行APP<br>在<code>主页-出国金融-Visa外币借记卡</code>里办理<br>或者<a href="https://www.bilibili.com/video/BV1DK4y1q7N5/">点击这里</a>跳转到我的视频查看如何进入</p><hr><p>注意：默认发件EMS，一定要快递员接电话！！！<br>要不然可能会出现找不到你人给你退回去的情况</p><h1 id="1-激活前准备工作"><a href="#1-激活前准备工作" class="headerlink" title="1.激活前准备工作"></a>1.激活前准备工作</h1><p>你所需要携带的：</p><ol><li>你的Visa和MasterCard借记卡</li><li>你的身份证</li></ol><p>假设你已满十六岁未满十八岁，且以自己的收入作为生活支出，你还要额外携带的：</p><ol><li>工作证明或其他证明你靠自己的独立收入生活的证明</li></ol><p>假设你未满十八岁，你还需要携带：</p><ol><li>你父母一方的身份证</li><li>你的户口本或其他可证明你和你父母的有效证明</li><li>你的父母一方</li></ol><h1 id="2-前往网点激活"><a href="#2-前往网点激活" class="headerlink" title="2.前往网点激活"></a>2.前往网点激活</h1><p>在地图上找到最近的网点，然后去激活就行了！<br>问你用途你就是是境外购物，去香港玩之类的<br>如果你此前没有办理过中信银行的卡，那么会再额外办理一张银联一类卡</p><h1 id="3-尾声"><a href="#3-尾声" class="headerlink" title="3.尾声"></a>3.尾声</h1><p>其实这张卡的激活蛮快的，前前后后弄了也就半个多小时就好了<br>实际测试发现存在延迟，一般48h后各大平台都会认识你的卡的<br>测试可以过Azure和AWS、Oracle认证失败，无法绑定到Google Pay、Paypal等<br>而且存入美金也是个麻烦<br>对于未成年人，存入美元似乎只有柜台办理一种方法<br>总之各位玩的开心！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>实践</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>未成年</tag>
+      
+      <tag>Visa</tag>
+      
+      <tag>MasterCard</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>你好 2024</title>
+    <link href="/2024/01/01/%E4%BD%A0%E5%A5%BD%202024/"/>
+    <url>/2024/01/01/%E4%BD%A0%E5%A5%BD%202024/</url>
+    
+    <content type="html"><![CDATA[<p>“我想回到过去，沉默着欢喜”</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客</category>
+      
+      <category>日常</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Blog</tag>
+      
+      <tag>Life</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>基于Gitalk和Github搭建一个评论区</title>
+    <link href="/2023/12/10/%E5%9F%BA%E4%BA%8EGitalk%E5%92%8CGithub%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%AF%84%E8%AE%BA%E5%8C%BA/"/>
+    <url>/2023/12/10/%E5%9F%BA%E4%BA%8EGitalk%E5%92%8CGithub%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%AF%84%E8%AE%BA%E5%8C%BA/</url>
+    
+    <content type="html"><![CDATA[<p>好久不见！<br>在咕咕咕了好几个月后，今天回来修下评论区了！</p><span id="more"></span><hr><h1 id="0-你需要准备的"><a href="#0-你需要准备的" class="headerlink" title="0.你需要准备的"></a>0.你需要准备的</h1><p>一个Github账号</p><h1 id="1-准备工作"><a href="#1-准备工作" class="headerlink" title="1.准备工作"></a>1.准备工作</h1><p>首先，您需要选择一个公共Github存储库（已存在或创建一个新的Github存储库）用于存储评论。<br>然后需要创建 GitHub Application，如果没有<a href="https://github.com/settings/applications/new">点击这里申请</a>，在 Authorization callback URL 一项内填写你的博客的域名。</p><h1 id="2-部署评论区"><a href="#2-部署评论区" class="headerlink" title="2.部署评论区"></a>2.部署评论区</h1><p>我的博客是基于hexo搭建的，所以只给出hexo下Gitalk的部署方法</p><p>首先，转到<code>_config.yml</code><br>找到部署Gitalk的地方，需要填写的内容可能如下可能如下（不同主题可能存在差异）</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># Gitalk</span><br><span class="hljs-comment"># 基于 GitHub Issues</span><br><span class="hljs-comment"># Based on GitHub Issues</span><br><span class="hljs-comment"># See: https://github.com/gitalk/gitalk#options</span><br><span class="hljs-attr">gitalk:</span><br>  <span class="hljs-attr">clientID:</span> <span class="hljs-string">你先前创建的GitHub</span> <span class="hljs-string">Application的ID</span><br>  <span class="hljs-attr">clientSecret:</span> <span class="hljs-string">你先前创建的GitHub</span> <span class="hljs-string">Application的Secret</span><br>  <span class="hljs-attr">repo:</span> <span class="hljs-string">你先前的仓库名</span><br>  <span class="hljs-attr">owner:</span> <span class="hljs-string">你的Github用户名</span><br>  <span class="hljs-attr">admin:</span> [<span class="hljs-string">&#x27;你的Github用户名&#x27;</span>]<br>  <span class="hljs-attr">language:</span> <span class="hljs-string">zh-CN</span><br>  <span class="hljs-attr">labels:</span> [<span class="hljs-string">&#x27;Gitalk&#x27;</span>]<br>  <span class="hljs-attr">perPage:</span> <span class="hljs-number">10</span><br>  <span class="hljs-attr">pagerDirection:</span> <span class="hljs-string">last</span><br>  <span class="hljs-attr">distractionFreeMode:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">createIssueManually:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-comment"># 默认 proxy 可能会失效，解决方法请见下方链接</span><br>  <span class="hljs-comment"># The default proxy may be invalid, refer to the links for solutions</span><br>  <span class="hljs-comment"># https://github.com/gitalk/gitalk/issues/429</span><br>  <span class="hljs-comment"># https://github.com/Zibri/cloudflare-cors-anywhere</span><br>  <span class="hljs-attr">proxy:</span> <span class="hljs-string">https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token</span> <span class="hljs-comment">#这里可以换成自己的proxy以加快访问速度</span><br></code></pre></td></tr></table></figure><p>向其中填入信息后，再次部署你的hexo，看看效果吧！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>实践</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Blog</tag>
+      
+      <tag>Github</tag>
+      
+      <tag>Gitalk</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>在玩客云上安装1Panel和OpenResty</title>
+    <link href="/2023/08/31/%E5%9C%A8%E7%8E%A9%E5%AE%A2%E4%BA%91%E4%B8%8A%E5%AE%89%E8%A3%851Panel%E5%92%8COpenResty/"/>
+    <url>/2023/08/31/%E5%9C%A8%E7%8E%A9%E5%AE%A2%E4%BA%91%E4%B8%8A%E5%AE%89%E8%A3%851Panel%E5%92%8COpenResty/</url>
+    
+    <content type="html"><![CDATA[<p>好久不见！<br>恰巧一年前从闲鱼花了25买了个玩客云回来玩玩，想着废物利用，这就有了这篇的文章</p><span id="more"></span><h2 id="0-准备工作"><a href="#0-准备工作" class="headerlink" title="0.准备工作"></a>0.准备工作</h2><p>前期的工作其实就是把玩客云刷入armbian系统，具体可以参考下面这篇文章：<br><a href="https://zhuanlan.zhihu.com/p/451706565">拆机&amp;刷机教程</a><br><a href="https://www.right.com.cn/forum/thread-8246606-1-2.html">固件包&amp;刷机工具</a>，这个固件更新</p><h2 id="1-安装1Panel"><a href="#1-安装1Panel" class="headerlink" title="1.安装1Panel"></a>1.安装1Panel</h2><p>连接到 ssh 后，先编辑<code>/etc/apt/sources.list.d/armbian.list</code>，将<code>http://apt.armbian.com</code>替换为<code>https://mirrors.tuna.tsinghua.edu.cn/armbian</code><br>或使用以下指令替换</p><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs awk">sudo sed -i.bak <span class="hljs-string">&#x27;s#http://apt.armbian.com#https://mirrors.tuna.tsinghua.edu.cn/armbian#g&#x27;</span> <span class="hljs-regexp">/etc/</span>apt<span class="hljs-regexp">/sources.list.d/</span>armbian.list<br>  sudo apt update<br></code></pre></td></tr></table></figure><p>然后执行<code>apt update</code></p><p>接着输入以下指令安装 docker<br><code>apt install docker-ce</code></p><p>输入以下指令安装1Panel管理面板：<br><code>curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh &amp;&amp; bash quick_start.sh</code></p><p>接着根据指引安装即可</p><p><code>Tips：你可以使用 1pctl user-info 来查看1Panel管理面板的端口、安全入口、账号与密码</code></p><h2 id="2-安装OpenResty"><a href="#2-安装OpenResty" class="headerlink" title="2.安装OpenResty"></a>2.安装OpenResty</h2><p>由于 OpenResty 官方未提供 armv7l 架构镜像，所以在应用商店启用 OpenResty 前，需要手动修改 OpenResty 镜像版本<br>根据<a href="https://1panel.cn/docs/faq/server_architecture/">1panel帮助文档</a>给出的解决方案，需要对镜像版本进行调整，但由于截至2023&#x2F;8&#x2F;31，OpenResty 的版本已经更新到了 1.21.4.2，因此该方法不在适用</p><p><strong>我个人的临时解决方案：</strong><br>在应用商店安装 OpenResty 时，选择<code>编辑 compose 文件</code>，将<code>image: openresty/openresty:1.21.4.2-focal</code>替换为<code>image: openresty/openresty:1.21.4.2-focal</code></p><p>当然如果你有技术实力的话，也欢迎您自行编译armv7l版本的 OpenResty</p><h2 id="3-结束"><a href="#3-结束" class="headerlink" title="3.结束"></a>3.结束</h2><p>这次主要是讲了 1Panel 和 OpenResty 在玩客云上的安装，未来应该还会有一些别的教程，如果你有任何疑惑或者什么想说的，欢迎在评论区留言<br>我是bingxin666，下次见</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>实践</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>服务器</tag>
+      
+      <tag>玩客云</tag>
+      
+      <tag>armv7l</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>如何从零搭建Minecraft服务器（1）</title>
+    <link href="/2023/07/01/%E5%A6%82%E4%BD%95%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BAMinecraft%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%881%EF%BC%89/"/>
+    <url>/2023/07/01/%E5%A6%82%E4%BD%95%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BAMinecraft%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%881%EF%BC%89/</url>
+    
+    <content type="html"><![CDATA[<p>为什么我要写这篇文章？<br>相信很多人都想过自己搭建一个服务器，但苦于技术等原因无法实现，本文将带领你如何搭建属于自己的Minecraft服务器。</p><span id="more"></span><hr><h1 id="0-写在前面"><a href="#0-写在前面" class="headerlink" title="0.写在前面"></a>0.写在前面</h1><p>首先我要给点开文章的你浇一盆冷水，<strong>Minecraft服务器的运营实际上很难</strong>，如果你是为了盈利而搭建服务器，那我劝你没有过人的技术、颠覆性的玩法、宽广的人脉和其他条件，那就放弃这个想法吧。<br>既然你看到了这里，那就说明你并不是抱着盈利的目的开服务器（或者对自己有着足够的信心），既然如此，那就开始吧！</p><h1 id="1-明确方向"><a href="#1-明确方向" class="headerlink" title="1.明确方向"></a>1.明确方向</h1><p>做任何事都应当明确自己的目标，搭建服务器也不例外。</p><h2 id="我真的需要一台服务器吗？"><a href="#我真的需要一台服务器吗？" class="headerlink" title="我真的需要一台服务器吗？"></a>我真的需要一台服务器吗？</h2><p>事实上，大多数人搭建服务器的想法可能只是一时兴起。如果你搭建服务器只是为了与朋友偶尔的联机，那么PCL、HMCL内置的联机功能和OpenFrp等内网穿透软件可能更适合你，因此，如果你不是需要长期稳定的服务器，那么我劝你没必要浪费这个钱。</p><h2 id="面板服-or-VPS？"><a href="#面板服-or-VPS？" class="headerlink" title="面板服 or VPS？"></a>面板服 or VPS？</h2><p>对于大多数只是想和朋友一起开服务器的人，面板服无疑最适合你们<br>如果你有类似于 QQ机器人&#x2F;服务器网站&#x2F;外置登陆服务器&#x2F;大型服务器 等其他需求，那稳定的VPS更适合你们<br>值得注意的是，<strong>部分面板服对于正版登陆的网络问题并不友好</strong>，因此请慎重选择</p><h2 id="我应该怎么决定配置？"><a href="#我应该怎么决定配置？" class="headerlink" title="我应该怎么决定配置？"></a>我应该怎么决定配置？</h2><p>以三个版本举例：<br>1.12.2 10人同时在线流畅运行 2核2G<br>1.16.5 10人同时在线流畅运行 2核4G<br>1.20.1 10人同时在线流畅运行 2核8G</p><p>（测试数据基准：Paper端，数据仅供参考）</p><p>一个显然的趋势是：在高版本，<strong>大内存</strong>比<strong>多核心</strong>更好。</p><h1 id="2-选购服务器-x2F-面板服"><a href="#2-选购服务器-x2F-面板服" class="headerlink" title="2.选购服务器&#x2F;面板服"></a>2.选购服务器&#x2F;面板服</h1><p>对于服务器：<br>腾讯云、阿里云、京东云等大厂更加安全且靠谱，如果你买小厂也请确认对方是否有资质（如备案等）<br>优惠力度上，三大运营商旗下的服务商（天翼云、移动云、联通云）的优惠一般更大的，其次是腾讯和阿里，小厂的优惠力度可能更大，<strong>但一定要注意数据安全</strong><br>如果你购买的是竞价实例，那么腾讯云的海外实例（含香港）的优惠力度更有竞争力，其次是阿里云（内地）<br>对于<strong>按量计费&#x2F;竞价实例</strong>，按流量计费比按带宽计费更加划算（如果你不跑大流量的话）</p><p>对于面板服：<br>面板服的标准参差不齐，因此我在这列举一些：<br><a href="https://www.rainyun.com/MTQ2NTg=_">雨云</a> 目前自己用的服务器商，按日结算和多种机型选择适合大部分人<br><a href="https://lankodata.com/">蓝科数据</a> 价格偏高<br>其他面板服可以在<a href="https://www.mcbbs.net/forum-trade-1.html">MCBBS</a>上的“交易代理”板块里寻找</p><p>剩下的教程下次更新，<del>才不是为了水几篇文章</del>。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>实践</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>服务器</tag>
+      
+      <tag>游戏</tag>
+      
+      <tag>Minecraft</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Bingxin的博客再次成立了！</title>
+    <link href="/2023/06/23/Binxin%E7%9A%84%E5%8D%9A%E5%AE%A2%E5%86%8D%E6%AC%A1%E6%88%90%E7%AB%8B%E4%BA%86/"/>
+    <url>/2023/06/23/Binxin%E7%9A%84%E5%8D%9A%E5%AE%A2%E5%86%8D%E6%AC%A1%E6%88%90%E7%AB%8B%E4%BA%86/</url>
+    
+    <content type="html"><![CDATA[<p>好消息是，在一次又一次的 <strong>建站-思考写什么-没钱续费服务器-再次建站</strong> 的循环中，博客还是再一次建立起来了！  </p><span id="more"></span><h2 id="为什么要说是“再一次”？"><a href="#为什么要说是“再一次”？" class="headerlink" title="为什么要说是“再一次”？"></a>为什么要说是“再一次”？</h2><p>其实建设博客的想法最早产自2019年上半年。不幸的是，由于学业、设备和极度不充裕的资金情况，这个想法在诞生之初就伴随着重重困难。<br>因此在这三年间，我先后多次尝试了Hexo、Wordpress、Typecho和其他博客软件，也辗转于腾讯云、阿里云、Azure、雨云等多家云服务商，最终敲定的方案是使用 Github Pages + Hexo 作为博客的实现方案。<br>对于曾经的文章，大多数应该都不会搬过来，最终都会随着时间消散的吧（笑）</p><h2 id="为什么最后选择了-GIthub-Pages-Hexo-这个方法来搭建博客？"><a href="#为什么最后选择了-GIthub-Pages-Hexo-这个方法来搭建博客？" class="headerlink" title="为什么最后选择了 GIthub Pages + Hexo 这个方法来搭建博客？"></a>为什么最后选择了 GIthub Pages + Hexo 这个方法来搭建博客？</h2><p>原因很简单，因为穷（笑）<br>Wordpress：简单上手，而且界面友好，但前提是你的服务器配置不能太低（2核2G），同时网络的成本问题也很大，总结下来就是过于臃肿<br>Typecho：上手难度更小，而且能和部分博客软件对接，并且虚拟主机上就能部署，但还是有一定的成本问题<br>Hexo：有一定的上手难度，但是稳定而且可靠（废话，静态网站不可靠就见鬼了），直接用Markdown而不是类似于Wordpress或者Typecho那样清晰的博客编写界面可能对于部分人不友好<br>那为什么选择Github Pages呢，因为没得选…</p><h2 id="如果我只是想搭博客，那选哪家服务商好？"><a href="#如果我只是想搭博客，那选哪家服务商好？" class="headerlink" title="如果我只是想搭博客，那选哪家服务商好？"></a>如果我只是想搭博客，那选哪家服务商好？</h2><p>都可以<br>腾讯云的阿里云的轻量服务器都很适合拿来当服务器，如果是虚拟主机的话可以选择雨云（主要是我也找不到其他更好或者有备案又做虚拟主机的厂商了），但总结一个字，得烧钱</p><h2 id="博客能写什么？"><a href="#博客能写什么？" class="headerlink" title="博客能写什么？"></a>博客能写什么？</h2><p><del>我不到啊！</del><br>随便写写，毕竟真的不好说</p><p>最后，写博客真的不是一件容易的事，从想法的构思再到实现再到把它描述书来，每一步都是困难的<br>感谢你看到这里</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Blog</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>（过时存档）我的世界入门教程-购买与下载Minecraft（1）</title>
+    <link href="/2022/09/06/%EF%BC%88%E5%B7%B2%E8%BF%87%E6%97%B6%E5%AD%98%E6%A1%A3%EF%BC%89%E6%88%91%E7%9A%84%E4%B8%96%E7%95%8C%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/"/>
+    <url>/2022/09/06/%EF%BC%88%E5%B7%B2%E8%BF%87%E6%97%B6%E5%AD%98%E6%A1%A3%EF%BC%89%E6%88%91%E7%9A%84%E4%B8%96%E7%95%8C%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/</url>
+    
+    <content type="html"><![CDATA[<p><strong>该文章发表于原旧博客，原markdown文件已丢失，在此引用知乎文章作为留档</strong></p><p><a href="https://zhuanlan.zhihu.com/p/507433581">我的世界入门教程-购买与下载Minecraft（1）</a></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>博客</category>
+      
+      <category>存档</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  
+</search>
