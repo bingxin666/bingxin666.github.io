@@ -1,0 +1,1144 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+    <link rel="canonical" href="https://blog.byteloid.one/2024/10/19/使用 WireGuard + OSPF 快速组网/"/>
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#3F8FD2">
+  <meta name="author" content="bingxin666">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="折腾了半天，兜兜转转还是回到了 OSPF 组网，不过这次充分吸取了之前的教训，应该不会再出现意外了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 WireGuard + OSPF 快速组网">
+<meta property="og:url" content="https://blog.byteloid.one/2024/10/19/%E4%BD%BF%E7%94%A8%20WireGuard%20+%20OSPF%20%E5%BF%AB%E9%80%9F%E7%BB%84%E7%BD%91/index.html">
+<meta property="og:site_name" content="Bingxin Blog">
+<meta property="og:description" content="折腾了半天，兜兜转转还是回到了 OSPF 组网，不过这次充分吸取了之前的教训，应该不会再出现意外了。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-10-19T08:28:37.000Z">
+<meta property="article:modified_time" content="2026-08-07T09:42:51.000Z">
+<meta property="article:author" content="bingxin666">
+<meta property="article:tag" content="服务器">
+<meta property="article:tag" content="异地组网">
+<meta property="article:tag" content="WireGuard">
+<meta property="article:tag" content="DN42">
+<meta property="article:tag" content="Zerotier">
+<meta property="article:tag" content="OSPF">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>使用 WireGuard + OSPF 快速组网 - Bingxin Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4677512_0tassopek6zm.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"blog.byteloid.one","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":false,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":false,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":"https://umami.notbigcake.net/api.js","website_id":"d6b6b59b-77e9-4d47-b146-eca7db33587d","domains":"blog.byteloid.one","start_time":"2024-11-17T00:00:00.000Z","token":null,"api_server":"https://umami.notbigcake.net"}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        let umami = document.createElement('script');
+        umami.async = true;
+        umami.src = "https://umami.notbigcake.net/api.js";
+        umami.setAttribute("data-website-id", "d6b6b59b-77e9-4d47-b146-eca7db33587d");
+        umami.setAttribute("data-domains", "blog.byteloid.one");
+        document.head.appendChild(umami);
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Bingxin Blog" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Bingxin</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/about/" target="_self">
+                    
+                    <span>关于 Bingxin</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/blog" target="_self">
+                    
+                    <span>关于此博客</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/social" target="_self">
+                    
+                    <span>关于社交平台</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/contact" target="_self">
+                    
+                    <span>关于联系方式</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/lost-links" target="_self">
+                    
+                    <span>失联友链</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://dn42.baka.pub/peering-request/bingxin-network.html" target="_self">
+                <i class="iconfont icon-code"></i>
+                <span>DN42</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-train-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/links/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>友链</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            
+            <div class="col-12 mobile-grid-group-header">
+              <i class="iconfont icon-user-fill"></i>
+              <span>关于</span>
+            </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/about/" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于 Bingxin</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/blog" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于此博客</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/social" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于社交平台</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/contact" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于联系方式</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/lost-links" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>失联友链</span>
+                  </div>
+                </a>
+              </div>
+            
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="https://dn42.baka.pub/peering-request/bingxin-network.html" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-code"></i>
+                  <span>DN42</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="https://www.travellings.cn/go.html" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-train-subway"></i>
+                  <span>开往</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://dailybing.com/api/v1/today') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="使用 WireGuard + OSPF 快速组网"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-10-19 16:28" pubdate>
+          2024年10月19日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          20 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">使用 WireGuard + OSPF 快速组网</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>折腾了半天，兜兜转转还是回到了 OSPF 组网，不过这次充分吸取了之前的教训，应该不会再出现意外了。</p>
+<span id="more"></span>
+
+<hr>
+<div class="note note-warning">
+            <p><strong>内容过时 &#x2F; 错误警告</strong><br>这是我的早期技术文章，其中可能存在过时 &#x2F; 错误的内容，请谨慎参考。<br>此外，我更新了我的组网方式，使用了 Bird2 + WireGuard + Babeld(Bird2) 的方式来组网，具体可以参考 <a href="/2025/06/02/babeld-over-wireguard/">使用 WireGuard + Babald(Bird2) 快速组网 - Bingxin Blog</a>。</p> 
+          </div> 
+
+<h1 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h1><h2 id="非常重要的系统设置"><a href="#非常重要的系统设置" class="headerlink" title="非常重要的系统设置"></a>非常重要的系统设置</h2><ul>
+<li>首先，<strong>千万 一定 绝对</strong> 要打开 Linux 内核的数据包转发功能，即 ip_forwarding</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &quot;net.ipv4.ip_forward=1&quot; &gt;&gt; /etc/sysctl.conf<br>echo &quot;net.ipv6.conf.default.forwarding=1&quot; &gt;&gt; /etc/sysctl.conf<br>echo &quot;net.ipv6.conf.all.forwarding=1&quot; &gt;&gt; /etc/sysctl.conf<br>sysctl -p<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>然后，<strong>千万 一定 绝对</strong> 要关闭 Linux 内核 rp_filter 的严格模式</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &quot;net.ipv4.conf.default.rp_filter=0&quot; &gt;&gt; /etc/sysctl.conf<br>echo &quot;net.ipv4.conf.all.rp_filter=0&quot; &gt;&gt; /etc/sysctl.conf<br>sysctl -p<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>最后，检查一下自己的系统是不是<strong>预装</strong>了 <code>iptables</code>，我自己就因为这个问题翻过车，如果没有装上，请自行安装。</li>
+</ul>
+<h2 id="软件前期安装"><a href="#软件前期安装" class="headerlink" title="软件前期安装"></a>软件前期安装</h2><p>必装：<code>bird2</code>、<code>wireguard</code></p>
+<p>强烈建议：<code>wireguard-tools</code>，装上这个才能愉快的用 <code>wg-quick</code>，如果你的系统不支持（如 OpenWrt），请自行抉择。</p>
+<p>可选：其他组网软件（如 <code>zerotier</code>）</p>
+<h1 id="内网组网"><a href="#内网组网" class="headerlink" title="内网组网"></a>内网组网</h1><h2 id="WireGuard-VPN"><a href="#WireGuard-VPN" class="headerlink" title="WireGuard VPN"></a>WireGuard VPN</h2><p>把你需要配置的服务器通过 WireGuard 直接或间接的连接到一起。</p>
+<p>你可以参考我的 WireGuard 配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs conf">[Interface]<br>PrivateKey = &lt;PrivateKey&gt;<br>ListenPort = &lt;Ports&gt;<br>Table = off # 非常重要！<br>PostUp = ip addr add &lt;YourIP&gt; peer &lt;PeerIP&gt; dev %i<br><br>[Peer]<br>PublicKey = &lt;Peer_PublicKey&gt;<br>Endpoint = &lt;Peer_Endpoint&gt;<br>AllowedIPs = 0.0.0.0/0,::/0<br>PersistentKeepalive = 25<br></code></pre></td></tr></table></figure>
+
+<h2 id="Zerotier（可选）"><a href="#Zerotier（可选）" class="headerlink" title="Zerotier（可选）"></a>Zerotier（可选）</h2><p>把你需要配置的服务器通过 Zerotier 组成 Full Mesh 网络。</p>
+<h1 id="配置-Bird"><a href="#配置-Bird" class="headerlink" title="配置 Bird"></a>配置 Bird</h1><p>为了方便管理，这里主要把 bird.conf 作为入口文件，然后逐一细分到其他配置文件。</p>
+<h2 id="bird-conf"><a href="#bird-conf" class="headerlink" title="bird.conf"></a>bird.conf</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><code class="hljs conf">################################################<br>#               Variable header                #<br>################################################<br><br>define OWNAS =  4237377373; # change it<br>define OWNIP =  10.50.211.1; # change it<br><br>################################################<br>#                 Header end                   #<br>################################################<br><br>log syslog all;<br>debug protocols all;<br><br>router id OWNIP;<br><br>protocol device&#123;<br>  scan time 10;<br>&#125;<br><br>protocol kernel&#123;<br>    ipv4 &#123;<br>        import none;<br>        export all;<br>    &#125;;<br>&#125;<br><br>protocol bfd&#123;<br>&#125;<br><br>ipv4 table OSPF_table;<br>ipv4 table BGP_table;<br><br>roa4 table roa4_fwnet;<br>roa6 table roa6_fwnet;<br><br>protocol rpki rpki_fwnet &#123;<br>        roa4 &#123; table roa4_fwnet; &#125;;<br>        roa6 &#123; table roa6_fwnet; &#125;;<br>        remote &quot;example.com&quot; port 8237; # change it<br>        refresh 30;<br>        retry 5;<br>        expire 600;<br>&#125;<br><br>include &quot;/etc/bird/ospf.conf&quot;;<br>include &quot;/etc/bird/bgp.conf&quot;;<br>include &quot;/etc/bird/ibgp.conf&quot;;<br><br>protocol pipe pipe_ospf_table&#123;<br>    table master4;<br>    peer table OSPF_table;<br>    import filter &#123;<br>        krt_prefsrc=OWNIP;<br>        accept;<br>    &#125;;<br>    export none;<br>&#125;<br><br>protocol pipe pipe_bgp_table &#123;<br>    table master4;<br>    peer table BGP_table;<br>    import filter &#123;<br>        if source != RTS_BGP then reject;<br>        krt_prefsrc=OWNIP;<br>        accept;<br>    &#125;;<br>    export none;<br>&#125;<br><br>include &quot;/etc/bird/peers/*&quot;;<br>include &quot;/etc/bird/bxnets/*&quot;;<br></code></pre></td></tr></table></figure>
+
+<p>简单介绍一下：</p>
+<ul>
+<li>一开始先是定义了我们内网的 IP 和 ASN</li>
+<li>然后是 ROA 这里，这里我引入了一个 RPKI，你应该根据自己的需要修改</li>
+<li>中间使用了三个 <code>include</code>，这里是引用了三个文件，即一会 OSPF、IBGP、EBGP 都会在这三个文件内实现</li>
+<li>最后的两个 <code>include</code> 则是引用了我分别放 EBGP 和 IBGP Peer 文件的地方</li>
+</ul>
+<h2 id="ospf-conf"><a href="#ospf-conf" class="headerlink" title="ospf.conf"></a>ospf.conf</h2><p>下面使用 OSPF 来确保 AS 内部的连通性</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs conf">protocol ospf v2 bxnets &#123;<br>        ipv4 &#123;<br>                table OSPF_table;<br>                export all;<br>                import all;<br>        &#125;;<br>        area 0.0.0.0 &#123;<br>                # change it<br>                interface &quot;wg-*&quot; &#123;<br>                        cost 5;<br>                        type ptp;<br>                &#125;;<br>                # change it<br>                interface &quot;zt*&quot; &#123;<br>                        cost 7;<br>                &#125;;<br>                # may change it<br>                interface &quot;lo&quot; &#123;<br>                        type bcast;<br>                &#125;;<br>                <br>        &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>同时手动在 lo 接口配置一个 ip 并通过广播 lo 接口的 ip 的方式把你的设备广播在你的 OSPF 里。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ip addr add 10.50.211.1 dev lo<br></code></pre></td></tr></table></figure>
+
+<p>为了让这个添加到 lo 的 ip 永久生效，你需要看看你的系统下的网络是怎么管理的。</p>
+<p>下面分别展示 netplan 和 interfaces 的配置方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs conf"># netplan<br>network:<br>  ethernets:<br>    lo:<br>      addresses: [10.50.211.1/32]<br>  version: 2<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs conf"># interfaces<br>auto lo<br>iface lo inet loopback<br>    dns-nameservers 114.114.114.114 2400:3200::1<br>    dns-search inwang.net<br><br>iface lo inet static<br>    address 10.50.211.1<br>    netmask 255.255.255.255<br></code></pre></td></tr></table></figure>
+
+<p>ospf 的 cost 随你喜欢，我个人一般综合判断带宽和延时决定大概给多少 cost。</p>
+<p>如果你在调试 bird 的时候发现日志里有提到 MTU 问题，请添加 <code>MTU = 1420</code> 在两边的 <code>[Interface]</code> 下。还是有问题的话尝试继续减小 MTU。</p>
+<h2 id="ibgp-conf"><a href="#ibgp-conf" class="headerlink" title="ibgp.conf"></a>ibgp.conf</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs conf">template bgp bxnet &#123;<br>    local as OWNAS;<br>    source address OWNIP;<br>    ipv4 &#123;<br>        next hop self;<br>        igp table OSPF_table;<br>        table BGP_table;<br>        import all;<br>        export filter &#123;<br>            if source = RTS_STATIC then reject;<br>            accept;<br>        &#125;;<br>    &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="bgp-conf"><a href="#bgp-conf" class="headerlink" title="bgp.conf"></a>bgp.conf</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs conf">protocol static &#123;<br>    ipv4 &#123;<br>        table BGP_table;<br>        import all;<br>        export none;<br>    &#125;;<br>    # change it<br>    route 10.50.211.0/24 reject;<br>&#125;<br><br>template bgp fwnet &#123;<br>    local OWNIP as OWNAS;<br>    ipv4 &#123;<br>        table BGP_table;<br>        import filter &#123;<br>            if (roa_check(roa4_fwnet, net, bgp_path.last) != ROA_VALID) then &#123;<br>              print &quot;[fwnet] ROA check failed for &quot;, net, &quot; ASN &quot;, bgp_path.last;<br>              reject;<br>            &#125; else accept;<br>        &#125;;<br>        export filter &#123;<br>            if source ~ [RTS_STATIC, RTS_BGP] then accept;<br>            reject;<br>        &#125;;<br>    &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里的过滤器引入了之前提到过的 ROA，如果你用不上应该自行删除。</p>
+<h1 id="继续增加节点"><a href="#继续增加节点" class="headerlink" title="继续增加节点"></a>继续增加节点</h1><p>这里涉及三个协议，OSPF IBGP EBGP。</p>
+<p>对于 OSPF 增加节点只要有一条隧道通上就好了，不过有条件的还是做 WireGuard Fullmesh，这会大幅度提升你的网络稳定性。</p>
+<p>EBGP 照样配就是，尽可能就近 peer。</p>
+<p>IBGP，你每增加一个节点，这个节点要和现存的所有节点 peer，也就是说 IBGP 需要 fullmesh。</p>
+<h1 id="疑难解答"><a href="#疑难解答" class="headerlink" title="疑难解答"></a>疑难解答</h1><h2 id="OSPF-没连上"><a href="#OSPF-没连上" class="headerlink" title="OSPF 没连上"></a>OSPF 没连上</h2><p><code>ip addr</code> 看看你的 wg 接口绑定了几个 IP 上去，多于一个那就重写 WireGuard 配置文件。如果你在 PostUp 里绑 IP 了那就不要 Address 字段了。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a target="_blank" rel="noopener" href="https://baimeow.cn/posts/dn11/configureibgp/">IBGP FullMesh 实现多节点自治域 | bs’ realm </a></p>
+<p><a target="_blank" rel="noopener" href="https://dn42.dev/howto/Bird2">Bird2 - DN42 Wiki</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E8%B7%B5/" class="category-chain-item">实践</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%AE%9E%E8%B7%B5/FWNET/" class="category-chain-item">FWNET</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8/" class="print-no-link">#服务器</a>
+      
+        <a href="/tags/%E5%BC%82%E5%9C%B0%E7%BB%84%E7%BD%91/" class="print-no-link">#异地组网</a>
+      
+        <a href="/tags/WireGuard/" class="print-no-link">#WireGuard</a>
+      
+        <a href="/tags/DN42/" class="print-no-link">#DN42</a>
+      
+        <a href="/tags/Zerotier/" class="print-no-link">#Zerotier</a>
+      
+        <a href="/tags/OSPF/" class="print-no-link">#OSPF</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>使用 WireGuard + OSPF 快速组网</div>
+      <div>https://blog.byteloid.one/2024/10/19/使用 WireGuard + OSPF 快速组网/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>bingxin666</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/11/01/docker%E9%83%A8%E7%BD%B2mastodon/" title="Mastodon 快速搭建教程（一）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Mastodon 快速搭建教程（一）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/09/28/%E4%BD%BF%E7%94%A8IPv6%E8%BF%9E%E6%8E%A5%E5%88%B0Cloudflare%20Tunnel%E7%9A%84%E8%BE%B9%E7%BC%98%E8%8A%82%E7%82%B9/" title="使用 IPv6 连接到 Cloudflare Tunnel 的边缘节点">
+                        <span class="hidden-mobile">使用 IPv6 连接到 Cloudflare Tunnel 的边缘节点</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+    <div id="giscus" class="giscus"></div>
+    <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"bingxin666/blogmessages","repo-id":"R_kgDOK33rjw","category":"Announcements","category-id":"DIC_kwDOK33rj84CciTj","theme-light":"light","theme-dark":"dark","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"input-position":"top","lang":"zh-CN"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script>
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <meta name="fediverse:creator" content="@bingxin@baka.ink"> <a rel="me noopener" target="_blank" href="https://baka.ink/@bingxin"></a> <a href="/" target="_blank" rel="nofollow noopener"><span>Bingxin 2022-Now </span></a> <a>|</a> <a href="/privacy/" target="_blank" rel="nofollow noopener"><span>隐私政策 </span></a> <a>|</a> <a href="/atom.xml" target="_blank" rel="nofollow noopener"><span>RSS </span></a> <a>|</a> <a href="https://www.travellings.cn/go.html" target="_blank" rel="nofollow noopener"><span>🚇开往</span></a> </br> <span id="website_runtime"></span> <script type="text/javascript"> function show_runtime(){window.setTimeout("show_runtime()",1000);x=new Date("2023/08/29 00:00:00");y=new Date();z=y.getTime()-x.getTime();mspd=24*60*60*1000;_d=z/mspd;d=Math.floor(_d);_h=(_d-d)*24;h=Math.floor(_h);_m=(_h-h)*60;m=Math.floor(_m);_s=(_m-m)*60;s=Math.floor(_s);website_runtime.innerHTML="本站已运行："+d+"天"+h+"小时"+m+"分"+s+"秒";}show_runtime(); </script> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/openkounter.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

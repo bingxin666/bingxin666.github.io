@@ -1,0 +1,1206 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+    <link rel="canonical" href="https://blog.byteloid.one/2025/03/23/emby-all-in-one-solution/"/>
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#3F8FD2">
+  <meta name="author" content="bingxin666">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="最近给某个群内搭建了 Emby 媒体服务器作为群服务提供，中间因为各种原因踩了大大小小的坑，最后才有了这篇文章。              注意：此文章随时可能更新，文中用到的软件可能随时更新，因此配置文件可能过时。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Emby N+1（自动入库新番、直链、AList、单点认证......) 最终解决方案">
+<meta property="og:url" content="https://blog.byteloid.one/2025/03/23/emby-all-in-one-solution/index.html">
+<meta property="og:site_name" content="Bingxin Blog">
+<meta property="og:description" content="最近给某个群内搭建了 Emby 媒体服务器作为群服务提供，中间因为各种原因踩了大大小小的坑，最后才有了这篇文章。              注意：此文章随时可能更新，文中用到的软件可能随时更新，因此配置文件可能过时。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-7.webp">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-2.webp">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-3.webp">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-1.webp">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-4.webp">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-5.png">
+<meta property="og:image" content="https://pic.r2.byteloid.one/2025-3-23-6.webp">
+<meta property="article:published_time" content="2025-03-23T10:38:31.000Z">
+<meta property="article:modified_time" content="2026-08-07T09:42:51.000Z">
+<meta property="article:author" content="bingxin666">
+<meta property="article:tag" content="ANI-RSS">
+<meta property="article:tag" content="Emby">
+<meta property="article:tag" content="AutoFilm">
+<meta property="article:tag" content="MediaWarp">
+<meta property="article:tag" content="Bangumi">
+<meta property="article:tag" content="AList">
+<meta property="article:tag" content="LDAP">
+<meta property="article:tag" content="天翼云盘">
+<meta property="article:tag" content="OneDrive">
+<meta property="article:tag" content="Authentik">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pic.r2.byteloid.one/2025-3-23-7.webp">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Emby N+1（自动入库新番、直链、AList、单点认证......) 最终解决方案 - Bingxin Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4677512_0tassopek6zm.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"blog.byteloid.one","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":false,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":false,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":"https://umami.notbigcake.net/api.js","website_id":"d6b6b59b-77e9-4d47-b146-eca7db33587d","domains":"blog.byteloid.one","start_time":"2024-11-17T00:00:00.000Z","token":null,"api_server":"https://umami.notbigcake.net"}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        let umami = document.createElement('script');
+        umami.async = true;
+        umami.src = "https://umami.notbigcake.net/api.js";
+        umami.setAttribute("data-website-id", "d6b6b59b-77e9-4d47-b146-eca7db33587d");
+        umami.setAttribute("data-domains", "blog.byteloid.one");
+        document.head.appendChild(umami);
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Bingxin Blog" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Bingxin</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" target="_self" href="javascript:;" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/about/" target="_self">
+                    
+                    <span>关于 Bingxin</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/blog" target="_self">
+                    
+                    <span>关于此博客</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/social" target="_self">
+                    
+                    <span>关于社交平台</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/contact" target="_self">
+                    
+                    <span>关于联系方式</span>
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" href="/aboutmore/lost-links" target="_self">
+                    
+                    <span>失联友链</span>
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://dn42.baka.pub/peering-request/bingxin-network.html" target="_self">
+                <i class="iconfont icon-code"></i>
+                <span>DN42</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-train-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/categories/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-category-fill"></i>
+                  <span>分类</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/links/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>友链</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            
+            <div class="col-12 mobile-grid-group-header">
+              <i class="iconfont icon-user-fill"></i>
+              <span>关于</span>
+            </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/about/" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于 Bingxin</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/blog" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于此博客</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/social" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于社交平台</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/contact" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>关于联系方式</span>
+                  </div>
+                </a>
+              </div>
+            
+              
+              
+              
+              <div class="col-4 mobile-grid-cell">
+                <a href="/aboutmore/lost-links" target="_self">
+                  <div class="mobile-grid-item">
+                    <i class="iconfont icon-link-fill"></i>
+                    <span>失联友链</span>
+                  </div>
+                </a>
+              </div>
+            
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="https://dn42.baka.pub/peering-request/bingxin-network.html" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-code"></i>
+                  <span>DN42</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="https://www.travellings.cn/go.html" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-train-subway"></i>
+                  <span>开往</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://dailybing.com/api/v1/today') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Emby N+1（自动入库新番、直链、AList、单点认证......) 最终解决方案"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-03-23 18:38" pubdate>
+          2025年3月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Emby N+1（自动入库新番、直链、AList、单点认证......) 最终解决方案</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>最近给某个群内搭建了 Emby 媒体服务器作为群服务提供，中间因为各种原因踩了大大小小的坑，最后才有了这篇文章。</p>
+<div class="note note-warning">
+            <p>注意：此文章随时可能更新，文中用到的软件可能随时更新，因此配置文件可能过时。</p> 
+          </div>
+
+<span id="more"></span>
+
+<h1 id="为什么是-Emby"><a href="#为什么是-Emby" class="headerlink" title="为什么是 Emby"></a>为什么是 Emby</h1><p>原因很简单：相较于 Jellyfin 和其竞品、Emby 的界面和体验都处于第一梯队的水平，且也有相当多的相关插件 &#x2F; 第三方客户端。</p>
+<p>但是其也不可避免的存在以下缺陷：</p>
+<ul>
+<li>价格偏贵：尽管存在开心版，但也只能<strong>解锁一部分功能</strong>，一些<strong>插件相关的功能（如 PodCast、TVLive 等）仍然无法使用</strong>。月付 4.99 USD，年付 54 USD，永久 119（黑五期间 99）USD。</li>
+<li>闭源问题：Emby 和 Jellyfin 早期有说不清道不明的关系，但是在后来分道扬镳，转为了闭源软件。</li>
+<li>功能偏少：Emby 的插件丰富度不如 Jellyfin。</li>
+</ul>
+<p>但即便如此，由于 Emby 在多用户管理等多个方面仍然好于其他软件，因此最终敲定了 Emby 作为媒体库的系统。</p>
+<h1 id="搭建目标"><a href="#搭建目标" class="headerlink" title="搭建目标"></a>搭建目标</h1><p>由于目标较多，因此文章会分为以下几个部分</p>
+<ul>
+<li>AList + 网盘挂载</li>
+<li>ANI-RSS 实现自动入库新番</li>
+<li>AutoFilm 自动生成 strm 文件供 Emby 刮削</li>
+<li>部署 Emby 服务端</li>
+<li>MediaWarp + Emby 向客户端返回网盘直链作为播放链接</li>
+<li>Bangumi 插件刮削番剧和多季番剧的元数据设置</li>
+<li>Authentik + LDAP 插件实现统一身份认证</li>
+</ul>
+<p><img src="https://pic.r2.byteloid.one/2025-3-23-7.webp" srcset="/img/loading.gif" lazyload alt="大致流程"></p>
+<h1 id="AList-网盘挂载"><a href="#AList-网盘挂载" class="headerlink" title="AList + 网盘挂载"></a>AList + 网盘挂载</h1><p><img src="https://pic.r2.byteloid.one/2025-3-23-2.webp" srcset="/img/loading.gif" lazyload alt="实现流程图"></p>
+<h2 id="部署-AList"><a href="#部署-AList" class="headerlink" title="部署 AList"></a>部署 AList</h2><p>参考 <a target="_blank" rel="noopener" href="https://alist.nn.ci/zh/guide/install/manual.html">AList 官方文档</a>自行部署。</p>
+<p>Docker Compose 文件参考如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3.3&#x27;</span><br><span class="hljs-attr">services:</span><br>  <span class="hljs-attr">alist:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">&#x27;xhofe/alist:beta&#x27;</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">alist</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;/etc/alist:/opt/alist/data&#x27;</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;5244:5244&#x27;</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">PUID=0</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">PGID=0</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">UMASK=022</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="挂载网盘"><a href="#挂载网盘" class="headerlink" title="挂载网盘"></a>挂载网盘</h2><p>假设我已经分别挂载了天翼云盘和 OneDrive，且他们都有 <code>bangumi</code> 这个文件夹。</p>
+<p>那么我们可以使用<strong>别名</strong>功能，选择添加存储 - 别名，设置挂载路径为 <code>/bangumi</code>、<strong>开启启用签名、关闭保护重名</strong>。</p>
+<p>在路径中填写：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">/天翼云盘/bangumi<br>/OneDrive/bangumi<br></code></pre></td></tr></table></figure>
+
+<p>随后，这两个文件夹中的内容都会显示在 <code>/bangumi</code> 目录下。</p>
+<div class="note note-info">
+            <p><strong>为什么要用别名</strong><br>假设我在不同网盘都存放了视频，但是一个个分别挂载太过麻烦，这时候别名功能就能让你把多个网盘的文件汇总在同一个文件夹下。</p> 
+          </div>
+
+<h1 id="ANI-RSS-实现自动入库新番"><a href="#ANI-RSS-实现自动入库新番" class="headerlink" title="ANI-RSS 实现自动入库新番"></a>ANI-RSS 实现自动入库新番</h1><p><img src="https://pic.r2.byteloid.one/2025-3-23-3.webp" srcset="/img/loading.gif" lazyload alt="实现流程图"></p>
+<h2 id="部署-ANI-RSS-和-qBittorrent"><a href="#部署-ANI-RSS-和-qBittorrent" class="headerlink" title="部署 ANI-RSS 和 qBittorrent"></a>部署 ANI-RSS 和 qBittorrent</h2><p>参考 <a target="_blank" rel="noopener" href="https://docs.wushuo.top/deploy/docker">ANI-RSS 官方文档</a> 和 <a target="_blank" rel="noopener" href="https://www.himiku.com/archives/ani-rss.html">ANI-RSS：自动追番新姿势！ - 初之音 </a> 部署。</p>
+<p>Docker Compose 文件参考如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">version:</span> <span class="hljs-string">&quot;3&quot;</span><br><span class="hljs-attr">services:</span><br>  <span class="hljs-attr">ani-rss:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">wushuo894/ani-rss</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">ani-rss</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">PORT=7789</span> <span class="hljs-comment"># ani-rss 端口</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">CONFIG=/config</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">TZ=Asia/Shanghai</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/volume1/docker/ani-rss/config:/config</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/volume2/wushuo/Media:/Media</span> <span class="hljs-comment"># 番剧挂载路径两侧须一致</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">always</span><br>    <span class="hljs-attr">network_mode:</span> <span class="hljs-string">host</span><br>  <span class="hljs-attr">qBittorrent:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">linuxserver/qbittorrent</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">qBittorrent</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">PUID=0</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">PGID=0</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">WEBUI_PORT=8080</span> <span class="hljs-comment"># qBittorrent 端口</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">TZ=Asia/Shanghai</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/volume1/docker/qBittorrent/config:/config</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/volume2/wushuo/downloads:/downloads</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">/volume2/wushuo/Media:/Media</span> <span class="hljs-comment"># 番剧挂载路径两侧须一致</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">always</span><br>    <span class="hljs-attr">network_mode:</span> <span class="hljs-string">host</span><br></code></pre></td></tr></table></figure>
+
+<p>ASS 的默认账户密码均为 admin，初次启动时 qBittorrent 会为 admin 用户生成一个随机密码，请查看日志获取初始密码。</p>
+<h2 id="配置自动上传至-AList"><a href="#配置自动上传至-AList" class="headerlink" title="配置自动上传至 AList"></a>配置自动上传至 AList</h2><p>打开 ANI-RSS，选择设置 - 下载设置 - Alist，分别填入 <code>AlistHost</code>、<code>AlistToken</code> 和 <code>AlistPath</code>，并且将开关打开。</p>
+<p><code>AlistHost</code>：AList 的访问链接（建议内网，HTTPS 端口请填写 alist.example:443）。<br><code>AlistToken</code>：打开 AList 管理界面，选择设置 - 其他，填入令牌。<br><code>AlistPath</code>：你的上传目录（不能是别名！只能填写真实目录！）。</p>
+<p>随后，订阅的番剧都会自动上传一份至网盘，你只需要<strong>定期清理 ANI-RSS 下载到硬盘的番剧即可（删除订阅不会删除已经上传的文件）</strong>。</p>
+<h1 id="AutoFilm-自动生成-strm-文件供-Emby-刮削"><a href="#AutoFilm-自动生成-strm-文件供-Emby-刮削" class="headerlink" title="AutoFilm 自动生成 strm 文件供 Emby 刮削"></a>AutoFilm 自动生成 strm 文件供 Emby 刮削</h1><p><img src="https://pic.r2.byteloid.one/2025-3-23-1.webp" srcset="/img/loading.gif" lazyload alt="实现流程图"></p>
+<h2 id="部署-AutoFilm"><a href="#部署-AutoFilm" class="headerlink" title="部署 AutoFilm"></a>部署 AutoFilm</h2><p>参考 <a target="_blank" rel="noopener" href="https://blog.akimio.top/posts/1031/">AutoFilm说明文档 | 秋澪的博客 </a> 部署。</p>
+<p>Docker Compose 文件参考如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3.1&#x27;</span><br><span class="hljs-attr">services:</span><br>  <span class="hljs-attr">autofilm:</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">always</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./autofilm_config:/config</span> <span class="hljs-comment"># AutoFilm 配置文件存放位置</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./media:/media</span>            <span class="hljs-comment"># .strm 文件存放位置</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./autofilm_logs:/logs</span>     <span class="hljs-comment"># AutoFilm 日志存放位置</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">autofilm</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">akimio/autofilm:latest</span><br></code></pre></td></tr></table></figure>
+
+<p>在 <code>./autofilm_config/config.yaml</code> 写入以下配置文件：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">Settings:</span><br>  <span class="hljs-attr">DEV:</span> <span class="hljs-literal">False</span>                          <span class="hljs-comment"># 开发者模式(可选，默认 False)</span><br><br><span class="hljs-attr">Alist2StrmList:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">动漫</span>                          <span class="hljs-comment"># 标识 ID</span><br>    <span class="hljs-attr">cron:</span> <span class="hljs-number">0</span> <span class="hljs-string">*</span> <span class="hljs-string">*</span> <span class="hljs-string">*</span> <span class="hljs-string">*</span>                <span class="hljs-comment"># 后台定时任务 Crontable 表达式</span><br>    <span class="hljs-attr">url:</span> <span class="hljs-string">http://alist:5244</span>     <span class="hljs-comment"># Alist 服务器地址</span><br>    <span class="hljs-attr">username:</span> <span class="hljs-string">alist</span>                   <span class="hljs-comment"># Alist 用户名</span><br>    <span class="hljs-attr">password:</span> <span class="hljs-string">alist</span>           <span class="hljs-comment"># Alist 密码</span><br><span class="hljs-comment">#   token: alist-d22d23ddf42fvv2      # Alist Token 永久令牌（可选，使用永久令牌则无需设置账号密码）</span><br>    <span class="hljs-attr">source_dir:</span> <span class="hljs-string">/bangumi/</span>                 <span class="hljs-comment"># Alist 服务器上文件夹路径</span><br>    <span class="hljs-attr">target_dir:</span> <span class="hljs-string">/media/bangumi/</span>          <span class="hljs-comment"># 输出路径</span><br>    <span class="hljs-attr">flatten_mode:</span> <span class="hljs-literal">False</span>               <span class="hljs-comment"># 平铺模式，开启后 subtitle、image、nfo 强制关闭(可选，默认 False)</span><br>    <span class="hljs-attr">subtitle:</span> <span class="hljs-literal">True</span>                   <span class="hljs-comment"># 是否下载字幕文件（可选，默认 False）</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-literal">False</span>                      <span class="hljs-comment"># 是否下载图片文件（可选，默认 False）</span><br>    <span class="hljs-attr">nfo:</span> <span class="hljs-literal">False</span>                        <span class="hljs-comment"># 是否下载 .nfo 文件（可选，默认 False）</span><br>    <span class="hljs-attr">raw_url:</span> <span class="hljs-literal">False</span>                    <span class="hljs-comment"># 是否使用原始地址替换 Alist 服务器下载地址（可选，默认 False）</span><br>    <span class="hljs-attr">overwrite:</span> <span class="hljs-literal">False</span>                 <span class="hljs-comment"># 覆盖模式，本地路径存在同名文件时是否重新生成/下载该文件（可选，默认 False）</span><br>    <span class="hljs-attr">sync_server:</span> <span class="hljs-literal">True</span>                 <span class="hljs-comment"># 是否同步服务器（可选，默认为 True）</span><br>    <span class="hljs-attr">sync_ignore:</span> <span class="hljs-string">\.(nfo|jpg)$</span>         <span class="hljs-comment"># 同步时忽略的文件正则表达式（可选，默认为空，仅对文件名及拓展名有效，对路径无效）</span><br>    <span class="hljs-attr">max_workers:</span> <span class="hljs-number">2</span>                    <span class="hljs-comment"># 下载文件最大并发数（可选，默认 5）</span><br>    <span class="hljs-attr">max_downloaders:</span> <span class="hljs-number">2</span>                <span class="hljs-comment"># 下载文件最大并发数（可选，默认 5）</span><br>    <span class="hljs-attr">mode:</span> <span class="hljs-string">AlistPath</span>                   <span class="hljs-comment"># 下载模式（可选项：AlistPath、AlistFile、AlistList，默认 AlistPath）</span><br></code></pre></td></tr></table></figure>
+
+<p>需要注意的点：</p>
+<ul>
+<li><code>mode</code> 请填写 <code>AlistPath</code>，因为可以<strong>配合下面的 MediaWarp 使用</strong>。</li>
+<li><code>cron</code> 不能填写 <code>* * * * *</code>，所以你不能一分钟刷新一次。</li>
+</ul>
+<p>随后，定时任务执行后，<code>./media</code> 文件夹下应当已经生成了 <code>.strm</code> 文件。</p>
+<h1 id="部署-Emby-服务端"><a href="#部署-Emby-服务端" class="headerlink" title="部署 Emby 服务端"></a>部署 Emby 服务端</h1><p>没什么好废话的，Docker Compose 一把梭：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs yml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3.1&#x27;</span><br> <span class="hljs-attr">emby:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">emby/embyserver:beta</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">emby</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./data:/config</span>  <span class="hljs-comment"># 持久化配置文件</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./media:/media</span>  <span class="hljs-comment"># 持久化媒体文件</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span>  <span class="hljs-comment"># 当容器停止时除非手动停止，自动重启</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-number">8096</span><span class="hljs-string">:8096</span> <span class="hljs-comment"># Emby 默认端口</span><br></code></pre></td></tr></table></figure>
+
+<p>需要注意，这里<strong>镜像需要选择 <code>beta</code> 版</strong>，因为下面的 Bangumi 插件和最新稳定版不兼容。</p>
+<h1 id="MediaWarp-向客户端返回网盘直链作为播放链接"><a href="#MediaWarp-向客户端返回网盘直链作为播放链接" class="headerlink" title="MediaWarp 向客户端返回网盘直链作为播放链接"></a>MediaWarp 向客户端返回网盘直链作为播放链接</h1><p>MediaWarp 是<strong>前置于 EmbyServer 的 反向代理服务器</strong>，修改了原版 EmbyServer 的 API 返回内容以实现特殊功能。</p>
+<p><img src="https://pic.r2.byteloid.one/2025-3-23-4.webp" srcset="/img/loading.gif" lazyload alt="实现流程图"></p>
+<h2 id="部署-MediaWarp"><a href="#部署-MediaWarp" class="headerlink" title="部署 MediaWarp"></a>部署 MediaWarp</h2><p>参考 <a target="_blank" rel="noopener" href="https://blog.akimio.top/posts/1041/">MediaWarp说明文档 | 秋澪的博客 </a> 部署。</p>
+<p>Docker Compose 文件参考如下：</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3.1&#x27;</span><br><span class="hljs-attr">services:</span><br>  <span class="hljs-attr">mediawarp:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">akimio/mediawarp:latest</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">mediawarp</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">unless-stopped</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./mediawarp_config:/config</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./mediawarp_logs:/logs</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">./static:/static</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-number">9000</span><span class="hljs-string">:9000</span><br></code></pre></td></tr></table></figure>
+
+<p>在 <code>./autofilm_config/config.yaml</code> 写入以下配置文件：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">Port:</span> <span class="hljs-number">9000</span>                                  <span class="hljs-comment"># MideWarp监听端口</span><br><br><span class="hljs-attr">MediaServer:</span>                                <span class="hljs-comment"># 媒体服务器相关设置</span><br>  <span class="hljs-attr">Type:</span> <span class="hljs-string">Emby</span>                                <span class="hljs-comment"># 媒体服务器类型（可选选项：Emby）</span><br>  <span class="hljs-attr">ADDR:</span> <span class="hljs-string">http://emby:8096</span>                    <span class="hljs-comment"># 媒体服务器地址</span><br>  <span class="hljs-attr">AUTH:</span> <span class="hljs-string">authkey</span>                             <span class="hljs-comment"># 媒体服务器认证方式</span><br><br><span class="hljs-attr">Cache:</span>                                      <span class="hljs-comment"># 缓存设置</span><br>  <span class="hljs-attr">Type:</span> <span class="hljs-string">Memory</span>                              <span class="hljs-comment"># 缓存类型（可选项：Memory内存缓存）</span><br>  <span class="hljs-attr">WebCache:</span> <span class="hljs-literal">False</span>                           <span class="hljs-comment"># 是否启用Web缓存中间件（若MdiaWarp离上游服务距离较近则不建议启用）</span><br><br><span class="hljs-attr">Logger:</span>                                     <span class="hljs-comment"># 日志设定</span><br>  <span class="hljs-attr">AccessLogger:</span>                             <span class="hljs-comment"># 访问日志设定</span><br>    <span class="hljs-attr">Console:</span> <span class="hljs-literal">True</span>                           <span class="hljs-comment"># 是否将访问日志文件输出到终端中</span><br>    <span class="hljs-attr">File:</span> <span class="hljs-literal">False</span>                             <span class="hljs-comment"># 是否将访问日志文件记录到文件中</span><br>  <span class="hljs-attr">ServiceLogger:</span>                            <span class="hljs-comment"># 服务日志设定</span><br>    <span class="hljs-attr">Console:</span> <span class="hljs-literal">True</span>                           <span class="hljs-comment"># 是否将服务日志文件输出到终端中</span><br>    <span class="hljs-attr">File:</span> <span class="hljs-literal">True</span>                              <span class="hljs-comment"># 是否将服务日志文件记录到文件中</span><br><br><span class="hljs-attr">Web:</span>                                        <span class="hljs-comment"># Web页面修改相关设置</span><br>  <span class="hljs-attr">Enable:</span> <span class="hljs-literal">True</span>                              <span class="hljs-comment"># 总开关</span><br>  <span class="hljs-attr">Custom:</span> <span class="hljs-literal">True</span>                              <span class="hljs-comment"># 是否加载自定义静态资源</span><br>  <span class="hljs-attr">Index:</span> <span class="hljs-literal">false</span>                               <span class="hljs-comment"># 是否从static目录读取index.html文件 </span><br>  <span class="hljs-attr">Head:</span> <span class="hljs-string">|</span>                                   <span class="hljs-comment"># 是否添加自定义字段到index.html的HEAD中</span><br>    <span class="hljs-string">&lt;script</span> <span class="hljs-string">src=&quot;/MediaWarp/static/custom/emby-front-end-mod/actor-plus.js&quot;&gt;&lt;/script&gt;</span><br>    <span class="hljs-string">&lt;script</span> <span class="hljs-string">src=&quot;/MediaWarp/static/custom/emby-front-end-mod/emby-swiper.js&quot;&gt;&lt;/script&gt;</span><br>    <span class="hljs-string">&lt;script</span> <span class="hljs-string">src=&quot;/MediaWarp/static/custom/emby-front-end-mod/emby-tab.js&quot;&gt;&lt;/script&gt;</span><br>    <span class="hljs-string">&lt;script</span> <span class="hljs-string">src=&quot;/MediaWarp/static/custom/emby-front-end-mod/fanart-show.js&quot;&gt;&lt;/script&gt;</span><br>    <span class="hljs-string">&lt;script</span> <span class="hljs-string">src=&quot;/MediaWarp/static/custom/emby-front-end-mod/playbackRate.js&quot;&gt;&lt;/script&gt;</span><br><br>  <span class="hljs-attr">ExternalPlayerUrl:</span> <span class="hljs-literal">True</span>                   <span class="hljs-comment"># 是否开启外置播放器</span><br>  <span class="hljs-attr">ActorPlus:</span> <span class="hljs-literal">false</span>                           <span class="hljs-comment"># 过滤没有头像的演员和制作人员</span><br>  <span class="hljs-attr">FanartShow:</span> <span class="hljs-literal">True</span>                          <span class="hljs-comment"># 显示同人图（fanart图）</span><br>  <span class="hljs-attr">Danmaku:</span> <span class="hljs-literal">True</span>                             <span class="hljs-comment"># Web显示弹幕</span><br>  <span class="hljs-attr">VideoTogether:</span> <span class="hljs-literal">False</span>                       <span class="hljs-comment"># 共同观影，详情见 https://videotogether.github.io/</span><br>  <span class="hljs-attr">BeautifyCSS:</span> <span class="hljs-literal">True</span>                         <span class="hljs-comment"># Emby美化CSS样式</span><br><br><span class="hljs-attr">ClientFilter:</span>                               <span class="hljs-comment"># 客户端过滤器</span><br>  <span class="hljs-attr">Enable:</span> <span class="hljs-literal">False</span>                             <span class="hljs-comment"># 是否启用客户端过滤器</span><br>  <span class="hljs-attr">Mode:</span> <span class="hljs-string">BlackList</span> <span class="hljs-comment"># WhileList / BlackList   # 黑白名单模式</span><br>  <span class="hljs-attr">ClientList:</span>                               <span class="hljs-comment"># 名单列表</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Fileball</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">Infuse</span><br><br><span class="hljs-comment"># 302重定向相关配置</span><br><br><span class="hljs-attr">HTTPStrm:</span> <br>  <span class="hljs-attr">Enable:</span> <span class="hljs-literal">False</span>                            <span class="hljs-comment"># 是否开启HttpStrm重定向</span><br>  <span class="hljs-attr">TransCode:</span> <span class="hljs-literal">True</span>                          <span class="hljs-comment"># False：强制关闭转码 True：保持原有转码设置</span><br>  <span class="hljs-attr">PrefixList:</span>                               <span class="hljs-comment"># EmbyServer中Strm文件的前缀（符合该前缀的Strm文件且被正确识别为http协议都会路由到该规则下）</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">/media/strm/http</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">/media/strm/https</span><br><br><span class="hljs-attr">AlistStrm:</span>                                  <span class="hljs-comment"># AlistStrm相关配置（Strm文件内容是Alist上文件的路径，目前仅支持适配Alist V3）</span><br>  <span class="hljs-attr">Enable:</span> <span class="hljs-literal">True</span>                              <span class="hljs-comment"># 是否启用AlistStrm重定向</span><br>  <span class="hljs-attr">TransCode:</span> <span class="hljs-literal">False</span>                           <span class="hljs-comment"># False：强制关闭转码 True：保持原有转码设置</span><br>  <span class="hljs-attr">RawURL:</span> <span class="hljs-literal">True</span>                             <span class="hljs-comment"># Fasle：直接响应 Alist 上游的真实链接 True：响应 Alist 服务器的直链（要求客户端可以访问到 Alist）</span><br>  <span class="hljs-attr">List:</span>                                     <span class="hljs-comment"># Alist服务关配置列表</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">ADDR:</span> <span class="hljs-string">http://1Panel-alist-fvbK:5244</span>      <span class="hljs-comment"># Alist服务器地址</span><br>      <span class="hljs-attr">Token:</span> <span class="hljs-string">AlistToken</span>  <span class="hljs-comment"># Alist Token</span><br>      <span class="hljs-attr">PrefixList:</span>                           <span class="hljs-comment"># EmbyServer中Strm文件的前缀（符合该前缀的Strm文件都会路由到该规则下）</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">/media/bangumi</span>                   <span class="hljs-comment"># 同一个Alist可以有多个前缀规则</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">/media/movies</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-string">/media/dramas</span><br><br><span class="hljs-attr">Subtitle:</span>                                   <span class="hljs-comment"># 字体相关设置</span><br>  <span class="hljs-attr">Enable:</span> <span class="hljs-literal">True</span>                              <span class="hljs-comment"># 启用</span><br>  <span class="hljs-attr">SRT2ASS:</span> <span class="hljs-literal">False</span>                             <span class="hljs-comment"># SRT 字幕转 ASS 字幕</span><br>  <span class="hljs-attr">ASSStyle:</span>                                 <span class="hljs-comment"># SRT 字幕转 ASS 字幕使用的样式</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding&quot;</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;Style: Default,楷体,20,&amp;H03FFFFFF,&amp;H00FFFFFF,&amp;H00000000,&amp;H02000000,-1,0,0,0,100,100,0,0,1,1,0,2,10,10,10,1&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>其中，<code>MediaServer</code> 的 <code>authkey</code> 可以在 <strong>Emby 管理后台 - 高级 - API 密钥</strong> 获取。</p>
+<h1 id="Bangumi-插件刮削番剧和多季番剧的元数据设置"><a href="#Bangumi-插件刮削番剧和多季番剧的元数据设置" class="headerlink" title="Bangumi 插件刮削番剧和多季番剧的元数据设置"></a>Bangumi 插件刮削番剧和多季番剧的元数据设置</h1><h2 id="添加-Bangumi-插件"><a href="#添加-Bangumi-插件" class="headerlink" title="添加 Bangumi 插件"></a>添加 Bangumi 插件</h2><p>从 <a target="_blank" rel="noopener" href="https://github.com/kookxiang/jellyfin-plugin-bangumi/releases">Releases</a> 界面下载 <code>Emby.Plugin.Bangumi.dll</code>，随后将其复制到 <code>./data/plugins/</code> 下，重启 Emby 服务器。</p>
+<h2 id="Bangumi-插件的设置"><a href="#Bangumi-插件的设置" class="headerlink" title="Bangumi 插件的设置"></a>Bangumi 插件的设置</h2><p>打开 <strong>Emby 管理后台 - Bangumi Lite</strong>，登录自己的 Bangumi 账号。</p>
+<p>你可以参考我的 Bangumi 插件设置：</p>
+<p><img src="https://pic.r2.byteloid.one/2025-3-23-5.png" srcset="/img/loading.gif" lazyload alt="Bangumi 插件设置"></p>
+<h2 id="多季番剧元数据设置"><a href="#多季番剧元数据设置" class="headerlink" title="多季番剧元数据设置"></a>多季番剧元数据设置</h2><p>参考官方 WIKI：</p>
+<blockquote>
+<p><strong>多季动漫</strong><br>使用 Season X 的文件夹存放每季的视频，jellyfin 会自动显示为 第 n 季<br>注意此时无法自动关联在 bangumi 上的 id，需要手动编辑该季的元数据，在 Bangumi 季 ID 中填写手动关联<br>关联后重新刷新元数据即可</p>
+<p><strong>分割放送的动漫</strong><br>对于分割放松的剧集，用 Season x Part y 的方式命名文件夹<br>此时 jellyfin 会在两个 Season x 的文件夹下分开存储元数据，但由于季号相同，界面上只会显示成一季<br>关联时需要点击单集动画，通过名称下方的 第 x 季 按钮返回，此时编辑元数据可以修改单个文件夹下的 ID<br>填写后通过同样的方式修改其他文件夹的 id，最后分别刷新元数据（或者直接在系列中刷新元数据）</p>
+</blockquote>
+<p>因此，打开元数据管理器，找到多季放送的番剧，展开后<strong>分别填写每一季的 Bangumi ID</strong>，随后点击<strong>保存 - 右侧三个点 - 刷新元数据 - 替换所有元数据</strong>，即可显示正确的元数据。</p>
+<h1 id="Authentik-LDAP-插件实现统一身份认证"><a href="#Authentik-LDAP-插件实现统一身份认证" class="headerlink" title="Authentik + LDAP 插件实现统一身份认证"></a>Authentik + LDAP 插件实现统一身份认证</h1><div class="note note-warning">
+            <p>LDAP 插件需要 Emby Premiere 订阅才能工作，开心版无法绕过此限制。</p> 
+          </div>
+
+<p><img src="https://pic.r2.byteloid.one/2025-3-23-6.webp" srcset="/img/loading.gif" lazyload alt="实现流程图"></p>
+<h2 id="配置-Authentik"><a href="#配置-Authentik" class="headerlink" title="配置 Authentik"></a>配置 Authentik</h2><p>按照正常流程配置 LDAP 和和前哨即可<del>才不是我懒得写了（</del></p>
+<h2 id="配置-LDAP-插件"><a href="#配置-LDAP-插件" class="headerlink" title="配置 LDAP 插件"></a>配置 LDAP 插件</h2><p>打开 <strong>Emby 管理后台 - 高级 - 插件 - LDAP</strong>，随后填写以下参数：</p>
+<p><code>LDAP server address</code>：LDAP 服务器地址，只需要填写 IP 或者是域名即可，<strong>不需要带协议头</strong>。<br><code>LDAP server Port number</code>：LDAP 服务器端口，启用 SSL 根据实际情况填写。</p>
+<p><code>Bind DN</code>：填写 Authentik 提示的 <code>Bind DN</code> 内容。<br><code>Bind credentials</code>：填写 Authentik 提示的 <code>Bind 密码</code> 内容。</p>
+<p><code>User search base</code>：填写为 <code>OU=users,DC=ldap,DC=goauthentik,DC=io</code>。<br><code>User search filter</code>：填写为：<code>(cn=&#123;0&#125;)</code></p>
+<p>如果一切顺利的话，这个时候 Emby 已经可以通过 LDAP 认证了。</p>
+<h1 id="已知问题"><a href="#已知问题" class="headerlink" title="已知问题"></a>已知问题</h1><h2 id="AutoFilm"><a href="#AutoFilm" class="headerlink" title="AutoFilm"></a>AutoFilm</h2><ul>
+<li><del>长时间运行任务时导致崩溃（<a target="_blank" rel="noopener" href="https://github.com/Akimio521/AutoFilm/issues/89">#89</a>）</del> 已在新版解决</li>
+<li>不支持音乐文件</li>
+</ul>
+<h2 id="MediaWarp"><a href="#MediaWarp" class="headerlink" title="MediaWarp"></a>MediaWarp</h2><ul>
+<li>影响到 Emby 播放电视直播（<a target="_blank" rel="noopener" href="https://github.com/Akimio521/MediaWarp/issues/26">#26</a>）</li>
+<li>不支持音乐文件</li>
+</ul>
+<h2 id="Bangumi-插件"><a href="#Bangumi-插件" class="headerlink" title="Bangumi 插件"></a>Bangumi 插件</h2><ul>
+<li>SP 内容无法正常刮削（<a target="_blank" rel="noopener" href="https://github.com/kookxiang/jellyfin-plugin-bangumi/issues/198">#198</a>）</li>
+<li>标题含有 <code>-</code> 无法正常刮削（<a target="_blank" rel="noopener" href="https://github.com/kookxiang/jellyfin-plugin-bangumi/issues/186">#186</a>）</li>
+<li>（2025&#x2F;5&#x2F;11 更新）实测在 Emby 4.9.0.40 后某个版本 Bangumi 插件失效</li>
+</ul>
+<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>说实话尽管发展了这么久，实际上整套系统还是不怎么成熟的。</p>
+<p>如果有条件的话，我还是建议本地大硬盘会更好，也没必要这么折腾。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E8%B7%B5/" class="category-chain-item">实践</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ANI-RSS/" class="print-no-link">#ANI-RSS</a>
+      
+        <a href="/tags/Emby/" class="print-no-link">#Emby</a>
+      
+        <a href="/tags/AutoFilm/" class="print-no-link">#AutoFilm</a>
+      
+        <a href="/tags/MediaWarp/" class="print-no-link">#MediaWarp</a>
+      
+        <a href="/tags/Bangumi/" class="print-no-link">#Bangumi</a>
+      
+        <a href="/tags/AList/" class="print-no-link">#AList</a>
+      
+        <a href="/tags/LDAP/" class="print-no-link">#LDAP</a>
+      
+        <a href="/tags/%E5%A4%A9%E7%BF%BC%E4%BA%91%E7%9B%98/" class="print-no-link">#天翼云盘</a>
+      
+        <a href="/tags/OneDrive/" class="print-no-link">#OneDrive</a>
+      
+        <a href="/tags/Authentik/" class="print-no-link">#Authentik</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Emby N+1（自动入库新番、直链、AList、单点认证......) 最终解决方案</div>
+      <div>https://blog.byteloid.one/2025/03/23/emby-all-in-one-solution/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>bingxin666</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年3月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/06/02/babeld-over-wireguard/" title="使用 WireGuard + Babald(Bird2) 快速组网">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用 WireGuard + Babald(Bird2) 快速组网</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/02/16/let-old-phones-using-china-broadnet/" title="让不支持的手机用上中国广电 4G/5G">
+                        <span class="hidden-mobile">让不支持的手机用上中国广电 4G/5G</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+    <div id="giscus" class="giscus"></div>
+    <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"bingxin666/blogmessages","repo-id":"R_kgDOK33rjw","category":"Announcements","category-id":"DIC_kwDOK33rj84CciTj","theme-light":"light","theme-dark":"dark","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"input-position":"top","lang":"zh-CN"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script>
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <meta name="fediverse:creator" content="@bingxin@baka.ink"> <a rel="me noopener" target="_blank" href="https://baka.ink/@bingxin"></a> <a href="/" target="_blank" rel="nofollow noopener"><span>Bingxin 2022-Now </span></a> <a>|</a> <a href="/privacy/" target="_blank" rel="nofollow noopener"><span>隐私政策 </span></a> <a>|</a> <a href="/atom.xml" target="_blank" rel="nofollow noopener"><span>RSS </span></a> <a>|</a> <a href="https://www.travellings.cn/go.html" target="_blank" rel="nofollow noopener"><span>🚇开往</span></a> </br> <span id="website_runtime"></span> <script type="text/javascript"> function show_runtime(){window.setTimeout("show_runtime()",1000);x=new Date("2023/08/29 00:00:00");y=new Date();z=y.getTime()-x.getTime();mspd=24*60*60*1000;_d=z/mspd;d=Math.floor(_d);_h=(_d-d)*24;h=Math.floor(_h);_m=(_h-h)*60;m=Math.floor(_m);_s=(_m-m)*60;s=Math.floor(_s);website_runtime.innerHTML="本站已运行："+d+"天"+h+"小时"+m+"分"+s+"秒";}show_runtime(); </script> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/openkounter.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
